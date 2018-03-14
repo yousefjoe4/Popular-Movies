@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    android:layout_marginTop="8dp"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+<ImageView
+    android:id="@+id/iv_ic_user"
+    android:layout_width="40dp"
+    android:layout_height="40dp"
+    android:layout_margin="8dp"
+    android:src="@drawable/user_ic"/>
+
+    <TextView
+        android:id="@+id/tv_review_item"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Body body Body body bodyBody body body ody Body body bodyBody body body ody Body body bodyBody body body "
+        android:textSize="15sp"
+        android:layout_alignLeft="@id/iv_ic_user"
+        android:layout_alignTop="@id/iv_ic_user"
+        android:textColor="#000000"
+        android:layout_marginLeft="45dp"
+        android:layout_marginRight="8dp"/>
+
+</RelativeLayout>

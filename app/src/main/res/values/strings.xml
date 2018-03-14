@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">Popular Movies</string>
+    <string name="overview">A self-made Billionaire found his way out and achieved his goals even though everyone thought it was impossible</string>
+    <string name="release_date">Release date:</string>
+    <string name="title">Yousef Gamal</string>
+    <string name="internet_error_message">NO INTERNET CONNECTION.</string>
+    <string name="favourites_error_message">NO FAVOURITE MOVIES</string>
+    <string name="action_bar_spinner">Spinner</string>
+    <string name="trailers">Trailers: </string>
+    <string name="trailer1">Trailer 1</string>
+    <string name="trailer2">Trailer 2</string>
+    <string name="reviews">Reviews</string>
+
+    <string name="sort_by_popular">Popular</string>
+    <string name="sort_by_top_rated">Top rated</string>
+    <string name="sort_by_favourites">Favourites</string>
+    <string-array name="sort_by">
+        <item>@string/sort_by_popular</item>
+        <item>@string/sort_by_top_rated</item>
+        <item>@string/sort_by_favourites</item>
+    </string-array>
+
+</resources>
