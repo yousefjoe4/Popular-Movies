@@ -261,8 +261,7 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
         contentValues.put(MoviesContract.MovieEntry.COLUMN_OVERVIEW, movie.overview);
         contentValues.put(MoviesContract.MovieEntry.COLUMN_RELEASE_DATE ,movie.releaseDate);
         contentValues.put(MoviesContract.MovieEntry.COLUMN_RATING, movie.voteAverage);
-//        contentValues.put(MoviesContract.MovieEntry.COLUMN_TRAILERS ,);
-//        contentValues.put(MoviesContract.MovieEntry.COLUMN_REVIEWS ,);
+
 
         getContentResolver().insert(MoviesContract.MovieEntry.CONTENT_URI,contentValues);
     }
