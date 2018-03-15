@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -43,6 +44,10 @@ public class MainActivity extends AppCompatActivity {
     private final int MOVIES_LOADER_ID = 1000;
     private final int FAVOURITE_MOVIES_LOADER_ID = 2000;
     private final String BUNDLE_KEY = "sortBY";
+    private final String ON_SAVED_INSTANCE_KEY = "onSavedKey";
+    Spinner spinner;
+    String savedInstanceString;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,13 +60,26 @@ public class MainActivity extends AppCompatActivity {
         SPINNER_TOP_RATED_ITEM = getString(R.string.sort_by_top_rated);
         SPINNER_FAVOURITES_ITEM = getString(R.string.sort_by_favourites);
 
-        // I THINK THE PROBLEM IS HERE
-        //***************************
-        Bundle bundle = new Bundle();
-        bundle.putString(BUNDLE_KEY, JSONUtils.ORDER_BY_POPULAR);
-        getLoaderManager().initLoader(MOVIES_LOADER_ID, bundle, moviesList);
-        //***************************
-        // I THINK THE PROBLEM IS HERE
+        savedInstanceString = null;
+
+        if (savedInstanceState != null) {
+            if (savedInstanceState.containsKey(ON_SAVED_INSTANCE_KEY)) {
+                savedInstanceString = savedInstanceState.getString(ON_SAVED_INSTANCE_KEY);
+            }
+        }
+
+        if (savedInstanceString == null || savedInstanceString.equals(SPINNER_POPULAR_ITEM)) {
+            Bundle bundle = new Bundle();
+            bundle.putString(BUNDLE_KEY, JSONUtils.ORDER_BY_POPULAR);
+            getLoaderManager().initLoader(MOVIES_LOADER_ID, bundle, moviesList).forceLoad();
+        } else if (savedInstanceString.equals(SPINNER_TOP_RATED_ITEM)) {
+
+            Bundle bundle = new Bundle();
+            bundle.putString(BUNDLE_KEY, JSONUtils.ORDER_BY_TOP_RATED);
+            getLoaderManager().initLoader(MOVIES_LOADER_ID, bundle, moviesList).forceLoad();
+        } else if (savedInstanceString.equals(SPINNER_FAVOURITES_ITEM)) {
+            getLoaderManager().initLoader(FAVOURITE_MOVIES_LOADER_ID, null, favouriteMovies);
+        }
 
 
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
@@ -79,12 +97,13 @@ public class MainActivity extends AppCompatActivity {
             return new AsyncTaskLoader<List<Movie>>(MainActivity.this) {
                 @Override
                 protected void onStartLoading() {
+
                     if (!(isNetworkActive())) {
                         showInternetErrorMessage();
                         return;
                     }
+
                     progressBar.setVisibility(View.VISIBLE);
-                    forceLoad();
                 }
 
                 @Override
@@ -101,7 +120,6 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onLoadFinished(Loader<List<Movie>> loader, final List<Movie> moviesList) {
             showMoviesViews();
-
             CustomRecyclerView.ItemOnClick itemOnClick = new CustomRecyclerView.ItemOnClick() {
                 @Override
                 public void onClick(int i) {
@@ -142,10 +160,11 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+
             showMoviesViews();
 
             final List<Movie> moviesListResult = convertCursorToMoviesList(cursor);
-            if (moviesListResult == null || moviesListResult.size() == 0|| cursor == null) {
+            if (moviesListResult == null || moviesListResult.size() == 0 || cursor == null) {
                 showFavouritesErrorMessage();
                 return;
             }
@@ -180,9 +199,8 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu, menu);
 
-        // Don't know how to change the black color of the Spinner.
         MenuItem menuItem = menu.findItem(R.id.spinner);
-        Spinner spinner = (Spinner) menuItem.getActionView();
+        spinner = (Spinner) menuItem.getActionView();
         setupSpinner(spinner);
 
         return true;
@@ -192,28 +210,27 @@ public class MainActivity extends AppCompatActivity {
         ArrayAdapter<CharSequence> arrayAdapter = ArrayAdapter.createFromResource(this,
                 R.array.sort_by,
                 R.layout.spinner_item);
-//        arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         spinner.setAdapter(arrayAdapter);
-
+        if (savedInstanceString != null) {
+            spinner.setSelection(arrayAdapter.getPosition(savedInstanceString));
+        }
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
                 String selectedItem = adapterView.getItemAtPosition(position).toString();
 
                 if (SPINNER_POPULAR_ITEM.equals(selectedItem)) {
-
                     Bundle bundle = new Bundle();
                     bundle.putString(BUNDLE_KEY, JSONUtils.ORDER_BY_POPULAR);
-
-                    getLoaderManager().restartLoader(MOVIES_LOADER_ID, bundle, moviesList);
+                    getLoaderManager().restartLoader(MOVIES_LOADER_ID, bundle, moviesList).forceLoad();
 
                 } else if (SPINNER_TOP_RATED_ITEM.equals(selectedItem)) {
 
                     Bundle bundle = new Bundle();
                     bundle.putString(BUNDLE_KEY, JSONUtils.ORDER_BY_TOP_RATED);
+                    getLoaderManager().restartLoader(MOVIES_LOADER_ID, bundle, moviesList).forceLoad();
 
-                    getLoaderManager().restartLoader(MOVIES_LOADER_ID, bundle, moviesList);
                 } else if (SPINNER_FAVOURITES_ITEM.equals(selectedItem)) {
 
                     getLoaderManager().initLoader(FAVOURITE_MOVIES_LOADER_ID, null, favouriteMovies);
@@ -255,9 +272,6 @@ public class MainActivity extends AppCompatActivity {
 
             int movieRating = cursor.getInt(cursor.getColumnIndex(MovieEntry.COLUMN_RATING));
 
-            String movieTrailers = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_TRAILERS));
-
-            String movieReviews = cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_REVIEWS));
 
             moviesListResult.add(new Movie(movieId, movieName, movieReleaseDate, movieOverview, movieRating, imageUri));
         } while (cursor.moveToNext());
@@ -284,5 +298,15 @@ public class MainActivity extends AppCompatActivity {
         progressBar.setVisibility(View.GONE);
         internetErrorMessage.setVisibility(View.GONE);
         favouritesErrorMessage.setVisibility(View.GONE);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (spinner != null) {
+            String selectedItem = spinner.getSelectedItem().toString();
+            outState.putString(ON_SAVED_INSTANCE_KEY, selectedItem);
+        }
+
     }
 }
