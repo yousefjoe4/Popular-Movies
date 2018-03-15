@@ -59,25 +59,28 @@ public class MainActivity extends AppCompatActivity {
         SPINNER_POPULAR_ITEM = getString(R.string.sort_by_popular);
         SPINNER_TOP_RATED_ITEM = getString(R.string.sort_by_top_rated);
         SPINNER_FAVOURITES_ITEM = getString(R.string.sort_by_favourites);
+        Log.e("MainActivity", "I'm on onCreate Start");
 
         savedInstanceString = null;
-
+        if (!(isNetworkActive())) {
+            showInternetErrorMessage();
+        }
         if (savedInstanceState != null) {
             if (savedInstanceState.containsKey(ON_SAVED_INSTANCE_KEY)) {
                 savedInstanceString = savedInstanceState.getString(ON_SAVED_INSTANCE_KEY);
             }
         }
 
-        if (savedInstanceString == null || savedInstanceString.equals(SPINNER_POPULAR_ITEM)) {
+        if ((savedInstanceString == null || savedInstanceString == SPINNER_POPULAR_ITEM) && isNetworkActive()) {
             Bundle bundle = new Bundle();
             bundle.putString(BUNDLE_KEY, JSONUtils.ORDER_BY_POPULAR);
             getLoaderManager().initLoader(MOVIES_LOADER_ID, bundle, moviesList).forceLoad();
-        } else if (savedInstanceString.equals(SPINNER_TOP_RATED_ITEM)) {
 
+        } else if (savedInstanceString == SPINNER_TOP_RATED_ITEM) {
             Bundle bundle = new Bundle();
             bundle.putString(BUNDLE_KEY, JSONUtils.ORDER_BY_TOP_RATED);
             getLoaderManager().initLoader(MOVIES_LOADER_ID, bundle, moviesList).forceLoad();
-        } else if (savedInstanceString.equals(SPINNER_FAVOURITES_ITEM)) {
+        } else if (savedInstanceString == SPINNER_FAVOURITES_ITEM) {
             getLoaderManager().initLoader(FAVOURITE_MOVIES_LOADER_ID, null, favouriteMovies);
         }
 
@@ -88,6 +91,8 @@ public class MainActivity extends AppCompatActivity {
         recyclerViewAdapter = new CustomRecyclerView(this);
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(recyclerViewAdapter);
+        Log.e("MainActivity", "I'm on onCreate End");
+
     }
 
     LoaderManager.LoaderCallbacks<List<Movie>> moviesList = new LoaderManager.LoaderCallbacks<List<Movie>>() {
@@ -97,13 +102,9 @@ public class MainActivity extends AppCompatActivity {
             return new AsyncTaskLoader<List<Movie>>(MainActivity.this) {
                 @Override
                 protected void onStartLoading() {
-
-                    if (!(isNetworkActive())) {
-                        showInternetErrorMessage();
-                        return;
-                    }
-
-                    progressBar.setVisibility(View.VISIBLE);
+                    Log.e("MainActivity", "I'm on onStartLoading");
+                    if (isNetworkActive())
+                        progressBar.setVisibility(View.VISIBLE);
                 }
 
                 @Override
@@ -211,6 +212,7 @@ public class MainActivity extends AppCompatActivity {
                 R.array.sort_by,
                 R.layout.spinner_item);
 
+        Log.e("MainActivity", "I'm on onCreateOptionMenu");
         spinner.setAdapter(arrayAdapter);
         if (savedInstanceString != null) {
             spinner.setSelection(arrayAdapter.getPosition(savedInstanceString));
@@ -220,18 +222,25 @@ public class MainActivity extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
                 String selectedItem = adapterView.getItemAtPosition(position).toString();
 
-                if (SPINNER_POPULAR_ITEM.equals(selectedItem)) {
-                    Bundle bundle = new Bundle();
-                    bundle.putString(BUNDLE_KEY, JSONUtils.ORDER_BY_POPULAR);
-                    getLoaderManager().restartLoader(MOVIES_LOADER_ID, bundle, moviesList).forceLoad();
+                if (SPINNER_POPULAR_ITEM == selectedItem) {
+                    if (isNetworkActive()) {
+                        Bundle bundle = new Bundle();
+                        bundle.putString(BUNDLE_KEY, JSONUtils.ORDER_BY_POPULAR);
+                        getLoaderManager().restartLoader(MOVIES_LOADER_ID, bundle, moviesList).forceLoad();
+                    } else {
+                        showInternetErrorMessage();
+                    }
+                } else if (SPINNER_TOP_RATED_ITEM == selectedItem) {
+                    if (isNetworkActive()) {
+                        Bundle bundle = new Bundle();
+                        bundle.putString(BUNDLE_KEY, JSONUtils.ORDER_BY_TOP_RATED);
+                        getLoaderManager().restartLoader(MOVIES_LOADER_ID, bundle, moviesList).forceLoad();
+                    } else {
+                        showInternetErrorMessage();
+                    }
 
-                } else if (SPINNER_TOP_RATED_ITEM.equals(selectedItem)) {
 
-                    Bundle bundle = new Bundle();
-                    bundle.putString(BUNDLE_KEY, JSONUtils.ORDER_BY_TOP_RATED);
-                    getLoaderManager().restartLoader(MOVIES_LOADER_ID, bundle, moviesList).forceLoad();
-
-                } else if (SPINNER_FAVOURITES_ITEM.equals(selectedItem)) {
+                } else if (SPINNER_FAVOURITES_ITEM == selectedItem) {
 
                     getLoaderManager().initLoader(FAVOURITE_MOVIES_LOADER_ID, null, favouriteMovies);
 
