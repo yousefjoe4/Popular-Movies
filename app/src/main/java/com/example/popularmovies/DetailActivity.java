@@ -139,10 +139,8 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
             public List<String> loadInBackground() {
                 switch (bundle.getString(BUNDLE_KEY)) {
                     case JSONUtils.TYPE_TRAILERS:
-                        Log.e("MainActivity", "In loadBackGround in TRAILERS side");
                         return JSONUtils.fetchTrailersReviews(String.valueOf(movie.id), JSONUtils.TYPE_TRAILERS);
                     case JSONUtils.TYPE_REVIEWS:
-                        Log.e("MainActivity", "In loadBackGround in REVIEWS side");
                         return JSONUtils.fetchTrailersReviews(String.valueOf(movie.id), JSONUtils.TYPE_REVIEWS);
                 }
                 return null;
@@ -244,7 +242,6 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
 
                 TextView reviewItemTextView = reviewItem.findViewById(R.id.tv_review_item);
                 String review = reviews.get(i);
-                Log.e("MainActivity", "ReviewText = " + review);
                 reviewItemTextView.setText(review);
             }
         }
@@ -287,4 +284,5 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
         }
         return false;
     }
+
 }
