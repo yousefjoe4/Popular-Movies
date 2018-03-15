@@ -35,7 +35,7 @@ public class CustomRecyclerView extends RecyclerView.Adapter<CustomRecyclerView.
     @Override
     public void onBindViewHolder(RecyclerViewHolder holder, int position) {
         Movie movie = movieList.get(position);
-        Picasso.with(context).load(movie.imageUri).into(holder.imageView);
+        Picasso.with(context).load(movie.imageUri).placeholder(R.drawable.ic_image_black_24dp).error(R.drawable.ic_image_black_24dp).into(holder.imageView);
     }
 
 
