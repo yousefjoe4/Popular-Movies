@@ -59,10 +59,8 @@ public class JSONUtils {
         String jsonData = getData(url);
         switch (type) {
             case TYPE_TRAILERS:
-                Log.e("JSONUtils", "JSON TRAILERS DATA IN LIST SIZE = " + parseTrailersJSON(jsonData).size());
                 return parseTrailersJSON(jsonData);
             case TYPE_REVIEWS:
-                Log.e("JSONUtils", "JSON REVIEWS DATA IN LIST SIZE = " + parseReviewsJSON(jsonData).size());
                 return parseReviewsJSON(jsonData);
         }
         return null;
@@ -208,27 +206,3 @@ public class JSONUtils {
         return reviews;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
