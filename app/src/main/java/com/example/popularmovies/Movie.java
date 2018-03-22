@@ -27,17 +27,6 @@ public class Movie implements Parcelable {
     }
 
 
-    public Movie(int id, String originalTitle, String releaseDate, String overview, int voteAverage, Uri imageUri, List<String> trailers, List<String> reviews) {
-        this.id = id;
-        this.originalTitle = originalTitle;
-        this.releaseDate = releaseDate;
-        this.overview = overview;
-        this.voteAverage = voteAverage;
-        this.imageUri = imageUri;
-        this.trailers = trailers;
-        this.reviews = reviews;
-    }
-
     private Movie(Parcel in) {
         id = in.readLong();
         originalTitle = in.readString();
@@ -62,7 +51,7 @@ public class Movie implements Parcelable {
         return 0;
     }
 
-    final static Parcelable.Creator CREATOR = new Parcelable.Creator() {
+    public final static Parcelable.Creator CREATOR = new Parcelable.Creator() {
         @Override
         public Movie createFromParcel(Parcel parcel) {
             return new Movie(parcel);
