@@ -25,12 +25,12 @@ import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.example.popularmovies.Data.MoviesContract;
+import com.example.popularmovies.data.MoviesContract;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.example.popularmovies.Data.MoviesContract.MovieEntry;
+import static com.example.popularmovies.data.MoviesContract.MovieEntry;
 
 public class MainActivity extends AppCompatActivity {
     private CustomRecyclerView recyclerViewAdapter;
@@ -64,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
         savedInstanceString = null;
         if (!(isNetworkActive())) {
             showInternetErrorMessage();
+            return;
         }
         if (savedInstanceState != null) {
             if (savedInstanceState.containsKey(ON_SAVED_INSTANCE_KEY)) {
@@ -71,16 +72,16 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        if ((savedInstanceString == null || savedInstanceString == SPINNER_POPULAR_ITEM) && isNetworkActive()) {
+        if ((null == savedInstanceString || savedInstanceString.equals(SPINNER_POPULAR_ITEM)) && isNetworkActive()) {
             Bundle bundle = new Bundle();
             bundle.putString(BUNDLE_KEY, JSONUtils.ORDER_BY_POPULAR);
             getLoaderManager().initLoader(MOVIES_LOADER_ID, bundle, moviesList).forceLoad();
 
-        } else if (savedInstanceString == SPINNER_TOP_RATED_ITEM) {
+        } else if (savedInstanceString != null && savedInstanceString.equals(SPINNER_TOP_RATED_ITEM)) {
             Bundle bundle = new Bundle();
             bundle.putString(BUNDLE_KEY, JSONUtils.ORDER_BY_TOP_RATED);
             getLoaderManager().initLoader(MOVIES_LOADER_ID, bundle, moviesList).forceLoad();
-        } else if (savedInstanceString == SPINNER_FAVOURITES_ITEM) {
+        } else if (savedInstanceString != null && savedInstanceString.equals(SPINNER_FAVOURITES_ITEM)) {
             getLoaderManager().initLoader(FAVOURITE_MOVIES_LOADER_ID, null, favouriteMovies);
         }
 
@@ -104,7 +105,13 @@ public class MainActivity extends AppCompatActivity {
                 protected void onStartLoading() {
                     Log.e("MainActivity", "I'm on onStartLoading");
                     if (isNetworkActive())
-                        progressBar.setVisibility(View.VISIBLE);
+                        if (spinner != null) {
+                            String selectedItem = spinner.getSelectedItem().toString();
+                            if (selectedItem.equals(SPINNER_POPULAR_ITEM) || selectedItem.equals(SPINNER_TOP_RATED_ITEM)) {
+                                forceLoad();
+                            }
+                        }
+                    progressBar.setVisibility(View.VISIBLE);
                 }
 
                 @Override
@@ -222,7 +229,7 @@ public class MainActivity extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
                 String selectedItem = adapterView.getItemAtPosition(position).toString();
 
-                if (SPINNER_POPULAR_ITEM == selectedItem) {
+                if (SPINNER_POPULAR_ITEM.equals(selectedItem)) {
                     if (isNetworkActive()) {
                         Bundle bundle = new Bundle();
                         bundle.putString(BUNDLE_KEY, JSONUtils.ORDER_BY_POPULAR);
@@ -230,7 +237,7 @@ public class MainActivity extends AppCompatActivity {
                     } else {
                         showInternetErrorMessage();
                     }
-                } else if (SPINNER_TOP_RATED_ITEM == selectedItem) {
+                } else if (SPINNER_TOP_RATED_ITEM.equals(selectedItem)) {
                     if (isNetworkActive()) {
                         Bundle bundle = new Bundle();
                         bundle.putString(BUNDLE_KEY, JSONUtils.ORDER_BY_TOP_RATED);
@@ -240,7 +247,7 @@ public class MainActivity extends AppCompatActivity {
                     }
 
 
-                } else if (SPINNER_FAVOURITES_ITEM == selectedItem) {
+                } else if (SPINNER_FAVOURITES_ITEM.equals(selectedItem)) {
 
                     getLoaderManager().initLoader(FAVOURITE_MOVIES_LOADER_ID, null, favouriteMovies);
 
