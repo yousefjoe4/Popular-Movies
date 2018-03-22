@@ -8,10 +8,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 
-/**
- * Created by yousef on 11/3/2018.
- */
-
 public class MovieProvider extends ContentProvider {
     MovieDbHelper movieDbHelper;
     public static final int CODE_MOVIES = 100;
