@@ -1,11 +1,7 @@
-package com.example.popularmovies.Data;
+package com.example.popularmovies.data;
 
 import android.net.Uri;
 import android.provider.BaseColumns;
-
-/**
- * Created by yousef on 11/3/2018.
- */
 
 public class MoviesContract {
 
