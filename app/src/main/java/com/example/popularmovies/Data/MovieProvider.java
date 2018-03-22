@@ -1,16 +1,12 @@
-package com.example.popularmovies.Data;
+package com.example.popularmovies.data;
 
 import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.util.Log;
 
 /**
  * Created by yousef on 11/3/2018.
