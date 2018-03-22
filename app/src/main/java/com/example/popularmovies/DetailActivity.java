@@ -6,24 +6,24 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.example.popularmovies.Data.MovieDbHelper;
-import com.example.popularmovies.Data.MoviesContract;
+import com.example.popularmovies.data.MoviesContract;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
@@ -60,6 +60,8 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
     @BindView(R.id.review_title)
     View reviewView;
     FloatingActionButton fab;
+    @BindView(R.id.scroll_view)
+    ScrollView scrollView;
 
     private final int LOADER_TRAILERS_ID = 2000;
     private final int LOADER_REVIEWS_ID = 3000;
@@ -69,6 +71,7 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
 
     private final String EMPTY_TAG = "empty";
     private final String FILLED_TAG = "filled";
+    private final String SCROLL_VIEW_ON_SAVED_INSTANCE = "scroll position";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,11 +79,15 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
         setContentView(R.layout.activity_detail);
         ButterKnife.bind(this);
 
+        if (savedInstanceState != null && savedInstanceState.containsKey(SCROLL_VIEW_ON_SAVED_INSTANCE)) {
+            float scrollPosition = savedInstanceState.getFloat(SCROLL_VIEW_ON_SAVED_INSTANCE);
+            scrollView.setY(scrollPosition);
+        }
         Intent intent = getIntent();
         movie = intent.getParcelableExtra(Intent.EXTRA_TEXT);
 
         originalTitleTextView.setText(movie.originalTitle);
-        Picasso.with(this).load(movie.imageUri).into(detailImage);
+        Picasso.with(this).load(movie.imageUri).placeholder(R.drawable.ic_image_black_24dp).error(R.drawable.ic_image_black_24dp).into(detailImage);
         releaseDate.setText(movie.releaseDate);
         overview.setText(movie.overview);
         String formattedVoteAverage = String.format("%d/10", Math.round(movie.voteAverage));
@@ -88,7 +95,7 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
 
 
         fab = findViewById(R.id.fab_button);
-        if(isMovieFavourite()){
+        if (isMovieFavourite()) {
             fab.setTag(FILLED_TAG);
             fab.setImageResource(R.drawable.ic_star);
         }
@@ -218,7 +225,9 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
     public void openTrailer(String key) {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(YOUTUBE_URL).buildUpon().appendQueryParameter("v", key).build());
-        startActivity(intent);
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        }
     }
 
     public void generateReviews(List<String> reviews) {
@@ -253,35 +262,48 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
 
         return (null != connectivityState && (connectivityState.isConnected()));
     }
-    private void saveMovieToFavourites(){
-        ContentValues contentValues = new ContentValues();
+
+    private void saveMovieToFavourites() {
+        final ContentValues contentValues = new ContentValues();
         contentValues.put(MoviesContract.MovieEntry.COLUMN_MOVIE_ID, movie.id);
         contentValues.put(MoviesContract.MovieEntry.COLUMN_PHOTO_URL, movie.imageUri.toString());
         contentValues.put(MoviesContract.MovieEntry.COLUMN_NAME, movie.originalTitle);
         contentValues.put(MoviesContract.MovieEntry.COLUMN_OVERVIEW, movie.overview);
-        contentValues.put(MoviesContract.MovieEntry.COLUMN_RELEASE_DATE ,movie.releaseDate);
+        contentValues.put(MoviesContract.MovieEntry.COLUMN_RELEASE_DATE, movie.releaseDate);
         contentValues.put(MoviesContract.MovieEntry.COLUMN_RATING, movie.voteAverage);
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... voids) {
+                getContentResolver().insert(MoviesContract.MovieEntry.CONTENT_URI, contentValues);
+                return null;
+            }
+        }.execute();
 
-
-        getContentResolver().insert(MoviesContract.MovieEntry.CONTENT_URI,contentValues);
     }
-    private void deleteMoviesFromFavourites(){
-        Uri uriWithId =  ContentUris.withAppendedId(MoviesContract.MovieEntry.CONTENT_URI, movie.id);
+
+    private void deleteMoviesFromFavourites() {
+        Uri uriWithId = ContentUris.withAppendedId(MoviesContract.MovieEntry.CONTENT_URI, movie.id);
         getContentResolver().delete(uriWithId, null, null);
     }
 
-    private boolean isMovieFavourite(){
+    private boolean isMovieFavourite() {
         String[] projection = {MoviesContract.MovieEntry.COLUMN_MOVIE_ID};
-        Uri uriWithId = ContentUris.withAppendedId(MoviesContract.MovieEntry.CONTENT_URI,movie.id);
-        Cursor cursor = getContentResolver().query(uriWithId,projection,null, null, null);
-        if(cursor != null && cursor.moveToFirst()){
-           long id =  cursor.getLong(cursor.getColumnIndex(MoviesContract.MovieEntry.COLUMN_MOVIE_ID));
+        Uri uriWithId = ContentUris.withAppendedId(MoviesContract.MovieEntry.CONTENT_URI, movie.id);
+        Cursor cursor = getContentResolver().query(uriWithId, projection, null, null, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            long id = cursor.getLong(cursor.getColumnIndex(MoviesContract.MovieEntry.COLUMN_MOVIE_ID));
 
-           if(id == movie.id){
-               return true;
-           }
+            if (id == movie.id) {
+                return true;
+            }
         }
         return false;
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        float scrollPosition = scrollView.getScaleY();
+        outState.putFloat(SCROLL_VIEW_ON_SAVED_INSTANCE, scrollPosition);
+    }
 }
