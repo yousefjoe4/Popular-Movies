@@ -1,5 +1,5 @@
 # Popular-Movies
-(Part of Android Developer Nanodegree)
+APK - https://drive.google.com/file/d/1nofQrQK63gUbLm0I53blVq8EvxAiP-0e/view?usp=sharing </br>
 
 •	An app that gets movies and positions them in the order based on the user's preference (popular, top-rated or favorite).
 
